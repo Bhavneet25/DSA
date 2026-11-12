@@ -1,0 +1,93 @@
+/* 
+in this ques we are using DLL and map..simple approach */
+class LRUCache {
+public:
+   //1. we will create the structure of node
+    struct Node
+    {
+        int key,value;
+        Node* next;
+        Node* prev;
+        Node(int key,int value)  //because we r storing key and value in the node
+        {
+             this->key=key;
+             this->value=value;
+             prev=next=NULL;
+        }
+    };
+     
+    unordered_map<int,Node*> mp;
+    Node* head=new Node(-1,-1);
+    Node* tail=new Node(-1,-1);
+
+    int capi;
+
+    LRUCache(int capacity) {
+        capi=capacity;
+        head->next=tail;
+        tail->prev=head;
+        
+    }
+
+    //Removing Node
+    void remove(Node* node)
+    {
+        node->prev->next=node->next;
+        node->next->prev=node->prev;
+    }
+
+   //Insert after head
+   void insertAfterHead(Node* node)
+   {
+
+    Node* temp=head->next;
+    head->next=node;
+    node->prev=head;
+    
+    node->next=temp;
+    temp->prev=node;
+
+   }
+    
+    int get(int key) {
+        if(mp.find(key)==mp.end())
+        {
+            return-1;
+        }
+
+        Node*node=mp[key]; //extracting address of node from the map
+        remove(node);
+        insertAfterHead(node);
+
+        return node->value;
+        
+    }
+    
+    void put(int key, int value) {
+        if(mp.find(key)!=mp.end())
+        {
+            Node* oldAddress=mp[key];
+            remove(oldAddress);
+            mp.erase(key);
+            delete oldAddress;
+        }
+        Node* node=new Node(key,value);
+        mp[key]=node;
+        insertAfterHead(node);
+
+        if(mp.size()>capi)
+        {
+            Node* lru =tail->prev;
+            remove(lru);
+            mp.erase(lru->key);
+            delete lru;
+        }
+    }
+};
+
+/**
+ * Your LRUCache object will be instantiated and called as such:
+ * LRUCache* obj = new LRUCache(capacity);
+ * int param_1 = obj->get(key);
+ * obj->put(key,value);
+ */
